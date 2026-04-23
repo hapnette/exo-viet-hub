@@ -45,7 +45,7 @@ const eventSchema = z.object({
     .refine((value) => !value || /^https?:\/\//i.test(value), "Use a full http(s) link"),
 });
 
-type EventFormValues = z.infer<typeof eventSchema>;
+export type EventFormValues = z.infer<typeof eventSchema>;
 
 type EventFormDialogProps = {
   open: boolean;

@@ -3,25 +3,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus, SearchX } from "lucide-react";
 
 import { EventCard } from "@/components/events/EventCard";
-import { EventFormDialog } from "@/components/events/EventFormDialog";
+import { EventFormDialog, type EventFormValues } from "@/components/events/EventFormDialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { MEMBER_OPTIONS, sortEvents, type EventRecord } from "@/lib/events";
-
-type EventFormValues = {
-  name: string;
-  fanpage: string;
-  type: string;
-  event_date: string;
-  event_time: string;
-  specific_address: string;
-  ward_commune?: string;
-  district: string;
-  member: string;
-  link?: string;
-};
 
 const bucketName = "event-images";
 
