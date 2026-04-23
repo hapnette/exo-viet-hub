@@ -47,6 +47,7 @@ const Index = () => {
   const [selectedDistrict, setSelectedDistrict] = useState("All");
   const [open, setOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<EventRecord | null>(null);
+  const [editingEvent, setEditingEvent] = useState<EventRecord | null>(null);
 
   const { data: events = [], isLoading, isError, error } = useQuery({
     queryKey: ["events"],
@@ -93,6 +94,53 @@ const Index = () => {
       toast({
         variant: "destructive",
         title: "Could not save event",
+        description: mutationError.message,
+      });
+    },
+  });
+
+  const updateEventMutation = useMutation({
+    mutationFn: async ({ eventId, values, imageFile, existingImageUrl }: { eventId: string; values: EventFormValues; imageFile?: File; existingImageUrl?: string | null }) => {
+      let imageUrl = existingImageUrl ?? null;
+
+      if (imageFile) {
+        imageUrl = await uploadEventImage(imageFile);
+      }
+
+      const payload: EventInsertPayload = {
+        name: values.name,
+        fanpage: values.fanpage,
+        type: values.type,
+        start_date: values.start_date,
+        start_time: values.start_time,
+        end_date: values.end_date,
+        end_time: values.end_time,
+        detailed_address: values.detailed_address,
+        district: values.district,
+        member: values.member,
+        ward_commune: values.ward_commune?.trim() || null,
+        link: values.link?.trim() || null,
+        image_url: imageUrl,
+      };
+
+      const { error: updateError } = await supabase.from("events").update(payload).eq("id", eventId);
+
+      if (updateError) throw updateError;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["events"] });
+      setOpen(false);
+      setEditingEvent(null);
+      setSelectedEvent(null);
+      toast({
+        title: "Event updated",
+        description: "Your event changes are now visible in the dashboard.",
+      });
+    },
+    onError: (mutationError: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Could not update event",
         description: mutationError.message,
       });
     },
@@ -200,7 +248,17 @@ const Index = () => {
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {filteredEvents.map((event) => (
-              <EventCard key={event.id} event={event} fallbackImage={fallbackEventImage} onClick={setSelectedEvent} />
+              <EventCard
+                key={event.id}
+                event={event}
+                fallbackImage={fallbackEventImage}
+                onClick={setSelectedEvent}
+                onEdit={(eventToEdit) => {
+                  setEditingEvent(eventToEdit);
+                  setSelectedEvent(null);
+                  setOpen(true);
+                }}
+              />
             ))}
           </div>
         )}
@@ -208,9 +266,24 @@ const Index = () => {
 
       <EventFormDialog
         open={open}
-        onOpenChange={setOpen}
-        isSubmitting={createEventMutation.isPending}
+        onOpenChange={(isOpen) => {
+          setOpen(isOpen);
+          if (!isOpen) setEditingEvent(null);
+        }}
+        isSubmitting={createEventMutation.isPending || updateEventMutation.isPending}
+        mode={editingEvent ? "edit" : "create"}
+        initialEvent={editingEvent}
         onSubmit={async (values, imageFile) => {
+          if (editingEvent) {
+            await updateEventMutation.mutateAsync({
+              eventId: editingEvent.id,
+              values,
+              imageFile,
+              existingImageUrl: editingEvent.image_url,
+            });
+            return;
+          }
+
           await createEventMutation.mutateAsync({ values, imageFile });
         }}
       />
@@ -219,6 +292,11 @@ const Index = () => {
         open={Boolean(selectedEvent)}
         event={selectedEvent}
         fallbackImage={fallbackEventImage}
+        onEdit={(eventToEdit) => {
+          setEditingEvent(eventToEdit);
+          setSelectedEvent(null);
+          setOpen(true);
+        }}
         onOpenChange={(isOpen) => {
           if (!isOpen) setSelectedEvent(null);
         }}

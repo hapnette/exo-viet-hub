@@ -1,3 +1,6 @@
+import { Pencil } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { EventRecord } from "@/lib/events";
 import { formatEventSchedule } from "@/lib/events";
@@ -9,9 +12,10 @@ type EventCardProps = {
   event: EventRecord;
   fallbackImage: string;
   onClick: (event: EventRecord) => void;
+  onEdit: (event: EventRecord) => void;
 };
 
-export const EventCard = ({ event, fallbackImage, onClick }: EventCardProps) => {
+export const EventCard = ({ event, fallbackImage, onClick, onEdit }: EventCardProps) => {
   return (
     <Card
       className="group overflow-hidden border-border bg-card shadow-soft transition-transform duration-200 hover:-translate-y-1"
@@ -27,11 +31,11 @@ export const EventCard = ({ event, fallbackImage, onClick }: EventCardProps) => 
     >
       <div className="flex min-h-[132px] flex-row-reverse sm:block">
         <div className="w-[30%] shrink-0 overflow-hidden border-l border-border bg-surface-2 sm:w-full sm:border-l-0 sm:border-b">
-          <div className="h-full sm:aspect-[16/9]">
+          <div className="aspect-square h-full sm:aspect-square">
             <img
               src={event.image_url ?? fallbackImage}
               alt={event.name}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+              className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.02]"
               loading="lazy"
             />
           </div>
@@ -49,10 +53,28 @@ export const EventCard = ({ event, fallbackImage, onClick }: EventCardProps) => 
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-1.5">
-            <span className={tagClassName}>{event.member}</span>
-            <span className={tagClassName}>{event.district}</span>
-            <span className={tagClassName}>{event.type}</span>
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-1.5">
+              <span className={tagClassName}>{event.member}</span>
+              <span className={tagClassName}>{event.district}</span>
+              <span className={tagClassName}>{event.type}</span>
+            </div>
+
+            <div className="flex justify-start">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
+                onClick={(clickEvent) => {
+                  clickEvent.stopPropagation();
+                  onEdit(event);
+                }}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Edit
+              </Button>
+            </div>
           </div>
         </CardContent>
       </div>

@@ -24,7 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { EVENT_TYPE_OPTIONS, MEMBER_OPTIONS } from "@/lib/events";
+import { EVENT_TYPE_OPTIONS, MEMBER_OPTIONS, type EventRecord } from "@/lib/events";
 
 const eventSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(120, "Keep it under 120 characters"),
@@ -61,6 +61,8 @@ type EventFormDialogProps = {
   onOpenChange: (open: boolean) => void;
   onSubmit: (values: EventFormValues, imageFile?: File) => Promise<void>;
   isSubmitting: boolean;
+  mode?: "create" | "edit";
+  initialEvent?: EventRecord | null;
 };
 
 const defaultValues: EventFormValues = {
@@ -78,7 +80,7 @@ const defaultValues: EventFormValues = {
   link: "",
 };
 
-export const EventFormDialog = ({ open, onOpenChange, onSubmit, isSubmitting }: EventFormDialogProps) => {
+export const EventFormDialog = ({ open, onOpenChange, onSubmit, isSubmitting, mode = "create", initialEvent = null }: EventFormDialogProps) => {
   const [imageFile, setImageFile] = useState<File | undefined>();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -100,14 +102,37 @@ export const EventFormDialog = ({ open, onOpenChange, onSubmit, isSubmitting }: 
   }, [imageFile]);
 
   useEffect(() => {
+    if (open && initialEvent) {
+      form.reset({
+        name: initialEvent.name,
+        fanpage: initialEvent.fanpage,
+        type: initialEvent.type,
+        start_date: initialEvent.start_date,
+        start_time: initialEvent.start_time.slice(0, 5),
+        end_date: initialEvent.end_date,
+        end_time: initialEvent.end_time.slice(0, 5),
+        detailed_address: initialEvent.detailed_address,
+        ward_commune: initialEvent.ward_commune ?? "",
+        district: initialEvent.district,
+        member: initialEvent.member,
+        link: initialEvent.link ?? "",
+      });
+      setImageFile(undefined);
+      setPreviewUrl(initialEvent.image_url ?? null);
+      return;
+    }
+
     if (!open) {
       form.reset(defaultValues);
       setImageFile(undefined);
       setPreviewUrl(null);
     }
-  }, [form, open]);
+  }, [form, initialEvent, open]);
 
-  const submitLabel = useMemo(() => (isSubmitting ? "Saving event..." : "Save event"), [isSubmitting]);
+  const submitLabel = useMemo(() => {
+    if (isSubmitting) return mode === "edit" ? "Saving changes..." : "Saving event...";
+    return mode === "edit" ? "Save changes" : "Save event";
+  }, [isSubmitting, mode]);
 
   const handleSubmit = form.handleSubmit(async (values) => {
     await onSubmit(values, imageFile);
@@ -121,8 +146,8 @@ export const EventFormDialog = ({ open, onOpenChange, onSubmit, isSubmitting }: 
       <DialogContent className="max-h-[92vh] w-[calc(100vw-1rem)] overflow-y-auto border-border bg-popover p-0 text-popover-foreground sm:max-w-3xl">
         <div className="border-b border-border px-4 py-4 sm:px-6 sm:py-5">
           <DialogHeader>
-              <DialogTitle className="text-title">Create Event</DialogTitle>
-            <DialogDescription>Add a fan event from any Vietnam fanpage.</DialogDescription>
+              <DialogTitle className="text-title">{mode === "edit" ? "Edit Event" : "Create Event"}</DialogTitle>
+            <DialogDescription>{mode === "edit" ? "Update the event details and artwork." : "Add a fan event from any Vietnam fanpage."}</DialogDescription>
           </DialogHeader>
         </div>
 

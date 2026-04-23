@@ -1,7 +1,8 @@
-import { CalendarDays, ExternalLink, MapPin } from "lucide-react";
+import { CalendarDays, ExternalLink, MapPin, Pencil } from "lucide-react";
 
 import type { EventRecord } from "@/lib/events";
 import { formatEventSchedule } from "@/lib/events";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const tagClassName =
@@ -12,9 +13,10 @@ type EventDetailDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   fallbackImage: string;
+  onEdit: (event: EventRecord) => void;
 };
 
-export const EventDetailDialog = ({ event, open, onOpenChange, fallbackImage }: EventDetailDialogProps) => {
+export const EventDetailDialog = ({ event, open, onOpenChange, fallbackImage, onEdit }: EventDetailDialogProps) => {
   if (!event) return null;
 
   return (
@@ -26,10 +28,22 @@ export const EventDetailDialog = ({ event, open, onOpenChange, fallbackImage }: 
 
         <div className="space-y-5 px-4 py-4 sm:px-6 sm:py-5">
           <DialogHeader className="space-y-3 text-left">
-            <div className="flex flex-wrap gap-2">
-              <span className={tagClassName}>{event.member}</span>
-              <span className={tagClassName}>{event.district}</span>
-              <span className={tagClassName}>{event.type}</span>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex flex-wrap gap-2">
+                <span className={tagClassName}>{event.member}</span>
+                <span className={tagClassName}>{event.district}</span>
+                <span className={tagClassName}>{event.type}</span>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => onEdit(event)}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Edit
+              </Button>
             </div>
             <DialogTitle className="text-balance text-2xl text-title sm:text-3xl">{event.name}</DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">{event.fanpage}</DialogDescription>
