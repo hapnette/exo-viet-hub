@@ -61,7 +61,7 @@ const Index = () => {
         image_url: imageUrl,
       };
 
-      const { error: insertError } = await supabase.from("events").insert(payload);
+      const { error: insertError } = await supabase.from("events").insert([payload]);
 
       if (insertError) throw insertError;
     },
