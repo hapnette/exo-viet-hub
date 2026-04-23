@@ -113,19 +113,19 @@ const Index = () => {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <section className="border-b border-border bg-surface-1/90">
-        <div className="container px-4 py-4 sm:px-6 sm:py-6 lg:py-10">
+        <div className="container px-4 py-3 sm:px-6 sm:py-5 lg:py-10">
           <div className="overflow-hidden rounded-md border border-border bg-surface-2 shadow-soft">
-            <div className="aspect-[6/7] sm:aspect-[16/9] lg:aspect-[21/9]">
+            <div className="aspect-[21/9] min-h-[88px] sm:aspect-[16/9] sm:min-h-0 lg:aspect-[21/9]">
               <img src={headerImage} alt="EXhOrizon in Ho Chi Minh City header artwork" className="h-full w-full object-cover" />
             </div>
           </div>
 
-          <div className="mt-5 flex flex-col gap-5">
-            <div className="space-y-3">
+          <div className="mt-4 flex flex-col gap-4">
+            <div className="space-y-2">
               <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-muted-foreground">Vietnam fan event tracker</p>
-              <div className="space-y-2">
-                <h1 className="text-3xl leading-none sm:text-4xl md:text-5xl">EXhOrizon in HO CHI MINH CITY - Fan Events</h1>
-                <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+              <div className="space-y-1.5">
+                <h1 className="text-[1.75rem] leading-[1.02] sm:text-4xl md:text-5xl">EXhOrizon in HO CHI MINH CITY - Fan Events</h1>
+                <p className="max-w-2xl text-sm leading-5 text-muted-foreground">
                   A mobile-first board for browsing and adding EXO fan events across Ho Chi Minh City fanpages.
                 </p>
               </div>
@@ -169,7 +169,7 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="container px-4 py-6 sm:px-6 md:py-8">
+      <section className="container px-4 py-5 sm:px-6 md:py-8">
         {isLoading ? (
           <div className="flex min-h-[320px] items-center justify-center rounded-lg border border-border bg-surface-2 text-muted-foreground shadow-soft">
             <div className="flex items-center gap-3 text-sm">
@@ -198,7 +198,7 @@ const Index = () => {
             </Button>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {filteredEvents.map((event) => (
               <EventCard key={event.id} event={event} fallbackImage={fallbackEventImage} onClick={setSelectedEvent} />
             ))}
