@@ -3,27 +3,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus, SearchX } from "lucide-react";
 
 import { EventCard } from "@/components/events/EventCard";
-import { EventFormDialog } from "@/components/events/EventFormDialog";
+import { EventFormDialog, type EventFormValues } from "@/components/events/EventFormDialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { MEMBER_OPTIONS, sortEvents, type EventRecord } from "@/lib/events";
 
-type EventFormValues = {
-  name: string;
-  fanpage: string;
-  type: string;
-  event_date: string;
-  event_time: string;
-  specific_address: string;
-  ward_commune?: string;
-  district: string;
-  member: string;
-  link?: string;
-};
-
 const bucketName = "event-images";
+
+type EventInsertPayload = Omit<EventRecord, "id" | "created_at">;
 
 const fetchEvents = async () => {
   const { data, error } = await supabase.from("events").select("*").order("created_at", { ascending: false });
@@ -67,14 +56,21 @@ const Index = () => {
         imageUrl = await uploadEventImage(imageFile);
       }
 
-      const payload = {
-        ...values,
+      const payload: EventInsertPayload = {
+        name: values.name,
+        fanpage: values.fanpage,
+        type: values.type,
+        event_date: values.event_date,
+        event_time: values.event_time,
+        specific_address: values.specific_address,
+        district: values.district,
+        member: values.member,
         ward_commune: values.ward_commune?.trim() || null,
         link: values.link?.trim() || null,
         image_url: imageUrl,
       };
 
-      const { error: insertError } = await supabase.from("events").insert(payload);
+      const { error: insertError } = await supabase.from("events").insert([payload]);
 
       if (insertError) throw insertError;
     },
