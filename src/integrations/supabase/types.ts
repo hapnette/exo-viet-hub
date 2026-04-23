@@ -14,7 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      events: {
+        Row: {
+          created_at: string
+          district: string
+          event_date: string
+          event_time: string
+          fanpage: string
+          id: string
+          image_url: string | null
+          link: string | null
+          member: string
+          name: string
+          specific_address: string
+          type: string
+          ward_commune: string | null
+        }
+        Insert: {
+          created_at?: string
+          district: string
+          event_date: string
+          event_time: string
+          fanpage: string
+          id?: string
+          image_url?: string | null
+          link?: string | null
+          member: string
+          name: string
+          specific_address: string
+          type: string
+          ward_commune?: string | null
+        }
+        Update: {
+          created_at?: string
+          district?: string
+          event_date?: string
+          event_time?: string
+          fanpage?: string
+          id?: string
+          image_url?: string | null
+          link?: string | null
+          member?: string
+          name?: string
+          specific_address?: string
+          type?: string
+          ward_commune?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
