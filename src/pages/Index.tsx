@@ -12,6 +12,8 @@ import { MEMBER_OPTIONS, sortEvents, type EventRecord } from "@/lib/events";
 
 const bucketName = "event-images";
 
+type EventInsertPayload = Omit<EventRecord, "id" | "created_at">;
+
 const fetchEvents = async () => {
   const { data, error } = await supabase.from("events").select("*").order("created_at", { ascending: false });
 
@@ -54,8 +56,15 @@ const Index = () => {
         imageUrl = await uploadEventImage(imageFile);
       }
 
-      const payload = {
-        ...values,
+      const payload: EventInsertPayload = {
+        name: values.name,
+        fanpage: values.fanpage,
+        type: values.type,
+        event_date: values.event_date,
+        event_time: values.event_time,
+        specific_address: values.specific_address,
+        district: values.district,
+        member: values.member,
         ward_commune: values.ward_commune?.trim() || null,
         link: values.link?.trim() || null,
         image_url: imageUrl,
