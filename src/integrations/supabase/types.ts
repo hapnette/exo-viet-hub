@@ -17,46 +17,52 @@ export type Database = {
       events: {
         Row: {
           created_at: string
+          detailed_address: string
           district: string
-          event_date: string
-          event_time: string
+          end_date: string
+          end_time: string
           fanpage: string
           id: string
           image_url: string | null
           link: string | null
           member: string
           name: string
-          specific_address: string
+          start_date: string
+          start_time: string
           type: string
           ward_commune: string | null
         }
         Insert: {
           created_at?: string
+          detailed_address: string
           district: string
-          event_date: string
-          event_time: string
+          end_date: string
+          end_time: string
           fanpage: string
           id?: string
           image_url?: string | null
           link?: string | null
           member: string
           name: string
-          specific_address: string
+          start_date: string
+          start_time: string
           type: string
           ward_commune?: string | null
         }
         Update: {
           created_at?: string
+          detailed_address?: string
           district?: string
-          event_date?: string
-          event_time?: string
+          end_date?: string
+          end_time?: string
           fanpage?: string
           id?: string
           image_url?: string | null
           link?: string | null
           member?: string
           name?: string
-          specific_address?: string
+          start_date?: string
+          start_time?: string
           type?: string
           ward_commune?: string | null
         }
