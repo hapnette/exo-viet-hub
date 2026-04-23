@@ -3,12 +3,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus, SearchX } from "lucide-react";
 
 import { EventCard } from "@/components/events/EventCard";
+import { EventDetailDialog } from "@/components/events/EventDetailDialog";
 import { EventFormDialog, type EventFormValues } from "@/components/events/EventFormDialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { MEMBER_OPTIONS, sortEvents, type EventRecord } from "@/lib/events";
+import headerImage from "@/assets/header-exhorizon.png";
+import fallbackEventImage from "@/assets/event-fallback.jpg";
 
 const bucketName = "event-images";
 
@@ -41,7 +44,9 @@ const Index = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [selectedMember, setSelectedMember] = useState<(typeof MEMBER_OPTIONS)[number]>("All");
+  const [selectedDistrict, setSelectedDistrict] = useState("All");
   const [open, setOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<EventRecord | null>(null);
 
   const { data: events = [], isLoading, isError, error } = useQuery({
     queryKey: ["events"],
@@ -60,9 +65,11 @@ const Index = () => {
         name: values.name,
         fanpage: values.fanpage,
         type: values.type,
-        event_date: values.event_date,
-        event_time: values.event_time,
-        specific_address: values.specific_address,
+        start_date: values.start_date,
+        start_time: values.start_time,
+        end_date: values.end_date,
+        end_time: values.end_time,
+        detailed_address: values.detailed_address,
         district: values.district,
         member: values.member,
         ward_commune: values.ward_commune?.trim() || null,
@@ -92,29 +99,42 @@ const Index = () => {
   });
 
   const filteredEvents = useMemo(() => {
-    if (selectedMember === "All") return events;
-    return events.filter((event) => event.member === selectedMember);
-  }, [events, selectedMember]);
+    return events.filter((event) => {
+      const matchesMember = selectedMember === "All" || event.member === selectedMember;
+      const matchesDistrict = selectedDistrict === "All" || event.district === selectedDistrict;
+      return matchesMember && matchesDistrict;
+    });
+  }, [events, selectedDistrict, selectedMember]);
+
+  const districtOptions = useMemo(() => {
+    return ["All", ...Array.from(new Set(events.map((event) => event.district))).sort((a, b) => a.localeCompare(b))];
+  }, [events]);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
       <section className="border-b border-border bg-surface-1/90">
-        <div className="container py-10 md:py-14">
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-3xl space-y-4">
-              <p className="text-xs font-medium uppercase tracking-[0.28em] text-muted-foreground">Vietnam fan event tracker</p>
-              <div className="space-y-3">
-                <h1 className="text-4xl leading-none md:text-6xl">EXO Fan Events</h1>
-                <p className="max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">
-                  A minimal board for collecting EXO fan events across Vietnam fanpages, with fast browsing and instant image-backed entries.
+        <div className="container px-4 py-4 sm:px-6 sm:py-6 lg:py-10">
+          <div className="overflow-hidden rounded-md border border-border bg-surface-2 shadow-soft">
+            <div className="aspect-[6/7] sm:aspect-[16/9] lg:aspect-[21/9]">
+              <img src={headerImage} alt="EXhOrizon in Ho Chi Minh City header artwork" className="h-full w-full object-cover" />
+            </div>
+          </div>
+
+          <div className="mt-5 flex flex-col gap-5">
+            <div className="space-y-3">
+              <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-muted-foreground">Vietnam fan event tracker</p>
+              <div className="space-y-2">
+                <h1 className="text-3xl leading-none sm:text-4xl md:text-5xl">EXhOrizon in HO CHI MINH CITY - Fan Events</h1>
+                <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                  A mobile-first board for browsing and adding EXO fan events across Ho Chi Minh City fanpages.
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <div className="min-w-[220px]">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,220px)_minmax(0,220px)_auto] lg:items-center">
+              <div>
                 <Select value={selectedMember} onValueChange={(value) => setSelectedMember(value as (typeof MEMBER_OPTIONS)[number])}>
-                  <SelectTrigger className="bg-surface-2">
+                  <SelectTrigger className="min-h-11 bg-surface-2">
                     <SelectValue placeholder="Filter by member" />
                   </SelectTrigger>
                   <SelectContent>
@@ -126,7 +146,21 @@ const Index = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <Button variant="hero" size="lg" onClick={() => setOpen(true)}>
+              <div>
+                <Select value={selectedDistrict} onValueChange={setSelectedDistrict}>
+                  <SelectTrigger className="min-h-11 bg-surface-2">
+                    <SelectValue placeholder="Filter by quận/huyện" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {districtOptions.map((district) => (
+                      <SelectItem key={district} value={district}>
+                        {district}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button variant="hero" size="lg" className="min-h-11 w-full lg:w-auto" onClick={() => setOpen(true)}>
                 <Plus className="h-4 w-4" />
                 Create Event
               </Button>
@@ -135,7 +169,7 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="container py-8 md:py-10">
+      <section className="container px-4 py-6 sm:px-6 md:py-8">
         {isLoading ? (
           <div className="flex min-h-[320px] items-center justify-center rounded-lg border border-border bg-surface-2 text-muted-foreground shadow-soft">
             <div className="flex items-center gap-3 text-sm">
@@ -164,9 +198,9 @@ const Index = () => {
             </Button>
           </div>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredEvents.map((event) => (
-              <EventCard key={event.id} event={event} />
+              <EventCard key={event.id} event={event} fallbackImage={fallbackEventImage} onClick={setSelectedEvent} />
             ))}
           </div>
         )}
@@ -178,6 +212,15 @@ const Index = () => {
         isSubmitting={createEventMutation.isPending}
         onSubmit={async (values, imageFile) => {
           await createEventMutation.mutateAsync({ values, imageFile });
+        }}
+      />
+
+      <EventDetailDialog
+        open={Boolean(selectedEvent)}
+        event={selectedEvent}
+        fallbackImage={fallbackEventImage}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setSelectedEvent(null);
         }}
       />
     </main>

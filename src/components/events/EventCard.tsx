@@ -1,4 +1,4 @@
-import { CalendarDays, ExternalLink, ImageOff, MapPin } from "lucide-react";
+import { CalendarDays, ExternalLink, MapPin } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import type { EventRecord } from "@/lib/events";
@@ -9,27 +9,31 @@ const tagClassName =
 
 type EventCardProps = {
   event: EventRecord;
+  fallbackImage: string;
+  onClick: (event: EventRecord) => void;
 };
 
-export const EventCard = ({ event }: EventCardProps) => {
+export const EventCard = ({ event, fallbackImage, onClick }: EventCardProps) => {
   return (
-    <Card className="group overflow-hidden border-border bg-card shadow-soft transition-transform duration-200 hover:-translate-y-1">
+    <Card
+      className="group overflow-hidden border-border bg-card shadow-soft transition-transform duration-200 hover:-translate-y-1"
+      onClick={() => onClick(event)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(keyboardEvent) => {
+        if (keyboardEvent.key === "Enter" || keyboardEvent.key === " ") {
+          keyboardEvent.preventDefault();
+          onClick(event);
+        }
+      }}
+    >
       <div className="relative aspect-[4/3] overflow-hidden border-b border-border bg-surface-2">
-        {event.image_url ? (
-          <img
-            src={event.image_url}
-            alt={event.name}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-            loading="lazy"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center bg-surface-1 text-muted-foreground">
-            <div className="flex items-center gap-2 text-sm">
-              <ImageOff className="h-4 w-4" />
-              No image
-            </div>
-          </div>
-        )}
+        <img
+          src={event.image_url ?? fallbackImage}
+          alt={event.name}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+          loading="lazy"
+        />
       </div>
 
       <CardContent className="space-y-4 p-5">
@@ -47,12 +51,12 @@ export const EventCard = ({ event }: EventCardProps) => {
         <div className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4 text-primary" />
-            <span>{formatEventSchedule(event.event_date, event.event_time)}</span>
+            <span>{formatEventSchedule(event.start_date, event.start_time, event.end_date, event.end_time)}</span>
           </div>
           <div className="flex items-start gap-2">
             <MapPin className="mt-0.5 h-4 w-4 text-primary" />
             <span className="line-clamp-2">
-              {event.specific_address}
+              {event.detailed_address}
               {event.ward_commune ? `, ${event.ward_commune}` : ""}, {event.district}
             </span>
           </div>
