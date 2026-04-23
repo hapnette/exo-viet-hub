@@ -30,9 +30,11 @@ const eventSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(120, "Keep it under 120 characters"),
   fanpage: z.string().trim().min(1, "Fanpage is required").max(120, "Keep it under 120 characters"),
   type: z.string().trim().min(1, "Type is required"),
-  event_date: z.string().trim().min(1, "Date is required"),
-  event_time: z.string().trim().min(1, "Time is required"),
-  specific_address: z.string().trim().min(1, "Specific address is required").max(200, "Keep it under 200 characters"),
+  start_date: z.string().trim().min(1, "Start date is required"),
+  start_time: z.string().trim().min(1, "Start time is required"),
+  end_date: z.string().trim().min(1, "End date is required"),
+  end_time: z.string().trim().min(1, "End time is required"),
+  detailed_address: z.string().trim().min(1, "Detailed address is required").max(200, "Keep it under 200 characters"),
   ward_commune: z.string().trim().max(100, "Keep it under 100 characters").optional().or(z.literal("")),
   district: z.string().trim().min(1, "District is required").max(100, "Keep it under 100 characters"),
   member: z.string().trim().min(1, "Member is required"),
@@ -43,6 +45,13 @@ const eventSchema = z.object({
     .optional()
     .or(z.literal(""))
     .refine((value) => !value || /^https?:\/\//i.test(value), "Use a full http(s) link"),
+}).refine((value) => {
+  const start = new Date(`${value.start_date}T${value.start_time}`);
+  const end = new Date(`${value.end_date}T${value.end_time}`);
+  return !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && end.getTime() >= start.getTime();
+}, {
+  message: "End date and time must be after the start date and time",
+  path: ["end_time"],
 });
 
 export type EventFormValues = z.infer<typeof eventSchema>;
@@ -58,9 +67,11 @@ const defaultValues: EventFormValues = {
   name: "",
   fanpage: "",
   type: "",
-  event_date: "",
-  event_time: "",
-  specific_address: "",
+  start_date: "",
+  start_time: "",
+  end_date: "",
+  end_time: "",
+  detailed_address: "",
   ward_commune: "",
   district: "",
   member: "",
@@ -107,17 +118,17 @@ export const EventFormDialog = ({ open, onOpenChange, onSubmit, isSubmitting }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92vh] overflow-y-auto border-border bg-popover p-0 text-popover-foreground sm:max-w-3xl">
-        <div className="border-b border-border px-6 py-5">
+      <DialogContent className="max-h-[92vh] w-[calc(100vw-1rem)] overflow-y-auto border-border bg-popover p-0 text-popover-foreground sm:max-w-3xl">
+        <div className="border-b border-border px-4 py-4 sm:px-6 sm:py-5">
           <DialogHeader>
-            <DialogTitle className="text-title">Create Event</DialogTitle>
+              <DialogTitle className="text-title">Create Event</DialogTitle>
             <DialogDescription>Add a fan event from any Vietnam fanpage.</DialogDescription>
           </DialogHeader>
         </div>
 
         <Form {...form}>
-          <form onSubmit={handleSubmit} className="space-y-6 px-6 py-6">
-            <div className="grid gap-4 md:grid-cols-2">
+          <form onSubmit={handleSubmit} className="space-y-6 px-4 py-5 sm:px-6 sm:py-6">
+            <div className="grid gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
                 name="name"
@@ -198,10 +209,10 @@ export const EventFormDialog = ({ open, onOpenChange, onSubmit, isSubmitting }: 
 
               <FormField
                 control={form.control}
-                name="event_date"
+                name="start_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Date</FormLabel>
+                    <FormLabel>Start date</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -212,10 +223,38 @@ export const EventFormDialog = ({ open, onOpenChange, onSubmit, isSubmitting }: 
 
               <FormField
                 control={form.control}
-                name="event_time"
+                name="start_time"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Time</FormLabel>
+                    <FormLabel>Start time</FormLabel>
+                    <FormControl>
+                      <Input type="time" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="end_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>End date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="end_time"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>End time</FormLabel>
                     <FormControl>
                       <Input type="time" {...field} />
                     </FormControl>
@@ -255,10 +294,10 @@ export const EventFormDialog = ({ open, onOpenChange, onSubmit, isSubmitting }: 
 
             <FormField
               control={form.control}
-              name="specific_address"
+                name="detailed_address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Specific address</FormLabel>
+                    <FormLabel>Detailed address</FormLabel>
                   <FormControl>
                     <Textarea rows={3} placeholder="Cafe name, street, building..." {...field} />
                   </FormControl>
@@ -309,7 +348,7 @@ export const EventFormDialog = ({ open, onOpenChange, onSubmit, isSubmitting }: 
               ) : null}
             </div>
 
-            <DialogFooter className="border-t border-border pt-5">
+             <DialogFooter className="border-t border-border pt-5 sm:flex-row">
               <Button type="button" variant="editorial" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
                 Cancel
               </Button>
