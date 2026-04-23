@@ -126,7 +126,7 @@ const Index = () => {
               <div className="space-y-1.5">
                 <h1 className="text-[1.75rem] leading-[1.02] sm:text-4xl md:text-5xl">EXhOrizon in HO CHI MINH CITY - Fan Events</h1>
                 <p className="max-w-2xl text-sm leading-5 text-muted-foreground">
-                  A mobile-first board for browsing and adding EXO fan events across Ho Chi Minh City fanpages.
+                  An archive of fan events for EXO specially crafted by EXO-L Vietnam
                 </p>
               </div>
             </div>
